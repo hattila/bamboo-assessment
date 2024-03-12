@@ -12,16 +12,20 @@ class Company
 
 class TestScript
 {
-    public function execute()
+    public function execute(): void
     {
         $start = microtime(true);
 
-        // get the company list from this url > https://5f27781bf5d27e001612e057.mockapi.io/webprovise/companies
-        // get the travel list from this url > https://5f27781bf5d27e001612e057.mockapi.io/webprovise/travels
+        /**
+         * The Task
+         * @see https://webprovise.coderbyte.com/question/question-custom-takehome-project-qf9t8jvtj9
+         * Process data from the two endpoints to have a nested array of companies with travel cost
+         * Travel cost of a particular company is the total travel price of employees in that company and its child companies
+         */
 
-        // Process data from the two endpoints to have a nested array of companies with travel cost
-        // Travel cost of a particular company is the total travel price of employees in that company and its child companies
-
+        /**
+         * The data could be fetched like this, but for the purpose of this test, we will use the cached data below
+         */
 //        $companies = json_decode(file_get_contents('https://5f27781bf5d27e001612e057.mockapi.io/webprovise/companies'), true);
 //        $travels = json_decode(file_get_contents('https://5f27781bf5d27e001612e057.mockapi.io/webprovise/travels'), true);
 
@@ -31,7 +35,7 @@ class TestScript
         $companies = json_decode($cachedCompaniesString, true);
         $travels = json_decode($cachedTravelsString, true);
 
-        // process the travels, and add their cost to the companies cost field
+        // add cost and children fields to the companies
         $companiesWithTravelCost = [];
         foreach ($companies as $company) {
             $company['cost'] = 0;
@@ -39,10 +43,12 @@ class TestScript
             $companiesWithTravelCost[$company['id']] = $company;
         }
 
+        // process travels and add their cost to the companies cost field
         foreach ($travels as $travel) {
             $companyId = $travel['companyId'];
             $companiesWithTravelCost[$companyId]['cost'] += $travel['price'];
         }
+
         // now we have all the companies direct travel costs
         // it is time to recursively iterate through the companies, find their children and add the cost of the children to the parent
         $nestedResult = $this->buildNestedArray($companiesWithTravelCost, 0);
@@ -51,7 +57,8 @@ class TestScript
         echo 'Total time: '.  (microtime(true) - $start);
     }
 
-    function buildNestedArray(&$companies, $parentId = 0) {
+    function buildNestedArray(&$companies, $parentId = 0): array
+    {
         $branch = array();
 
         foreach ($companies as $company) {
